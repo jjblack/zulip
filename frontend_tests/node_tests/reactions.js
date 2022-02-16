@@ -165,7 +165,7 @@ test("basics", () => {
             emoji_code: "1f641",
             local_id: "unicode_emoji,1f641",
             count: 1,
-            vote_text: "Cali",
+            vote_text: "1",
             user_ids: [7],
             label: "translated: Cali reacted with :frown:",
             emoji_alt_code: false,
@@ -178,7 +178,7 @@ test("basics", () => {
             emoji_code: "992",
             local_id: "realm_emoji,992",
             count: 1,
-            vote_text: "translated: You",
+            vote_text: "1",
             user_ids: [5],
             label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
             emoji_alt_code: false,
@@ -366,14 +366,15 @@ test("sending", ({override, override_rewire}) => {
     });
 });
 
-test("set_reaction_count", () => {
+test("set_reaction_vote_text", () => {
     const name_or_count_element = $.create("count-stub");
     const reaction_element = $.create("reaction-stub");
     const user_list = [5, 6, 7, 8];
+    const message = {...sample_message};
 
     reaction_element.set_find_results(".message_reaction_count", name_or_count_element);
 
-    reactions.set_reaction_count(reaction_element, user_list);
+    reactions.set_reaction_vote_text(reaction_element, user_list, message);
 
     assert.equal(name_or_count_element.text(), "4");
 });
@@ -493,6 +494,7 @@ test("add_reaction/remove_reaction", ({override}) => {
                     emoji_name: "8ball",
                     emoji_code: "1f3b1",
                     user_id: alice.user_id,
+                    vote_text: "translated: You",
                 },
             },
         ],
@@ -522,6 +524,7 @@ test("add_reaction/remove_reaction", ({override}) => {
                     emoji_code: "1f3b1",
                     user_id: bob.user_id,
                     user_list: [alice.user_id, bob.user_id],
+                    vote_text: "translated: You, Bob van Roberts",
                 },
             },
         ],
@@ -541,6 +544,7 @@ test("add_reaction/remove_reaction", ({override}) => {
                     emoji_name: "airplane",
                     emoji_code: "2708",
                     user_id: cali.user_id,
+                    vote_text: "Cali",
                 },
             },
         ],
@@ -604,6 +608,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override_rewire, mock_te
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: alice.user_id,
+        vote_text: "translated: You",
     };
 
     const message_reactions = $.create("our-reactions");
@@ -652,6 +657,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override_rewire, mock_te
         emoji_name: "zulip",
         emoji_code: "zulip",
         user_id: bob.user_id,
+        vote_text: "Bob van Roberts",
     };
 
     const message_reactions = $.create("our-reactions");
@@ -713,11 +719,6 @@ test("view.update_existing_reaction (me)", ({override_rewire}) => {
         return our_reaction;
     });
 
-    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
-        assert.equal(reaction, our_reaction);
-        assert.equal(user_list, opts.user_list);
-    });
-
     reactions.view.update_existing_reaction(opts);
 
     assert.ok(our_reaction.hasClass("reacted"));
@@ -743,11 +744,6 @@ test("view.update_existing_reaction (them)", ({override_rewire}) => {
         assert.equal(message_id, opts.message_id);
         assert.equal(local_id, "unicode_emoji,1f3b1");
         return our_reaction;
-    });
-
-    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
-        assert.equal(reaction, our_reaction);
-        assert.equal(user_list, opts.user_list);
     });
 
     reactions.view.update_existing_reaction(opts);
@@ -778,11 +774,6 @@ test("view.remove_reaction (me)", ({override_rewire}) => {
         return our_reaction;
     });
 
-    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
-        assert.equal(reaction, our_reaction);
-        assert.equal(user_list, opts.user_list);
-    });
-
     reactions.view.remove_reaction(opts);
 
     assert.ok(!our_reaction.hasClass("reacted"));
@@ -809,11 +800,6 @@ test("view.remove_reaction (them)", ({override_rewire}) => {
         assert.equal(message_id, opts.message_id);
         assert.equal(local_id, "unicode_emoji,1f3b1");
         return our_reaction;
-    });
-
-    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
-        assert.equal(reaction, our_reaction);
-        assert.equal(user_list, opts.user_list);
     });
 
     our_reaction.addClass("reacted");
